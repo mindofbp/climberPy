@@ -1,0 +1,286 @@
+import os
+from typing import List
+from uuid import uuid4
+
+import utils
+import cairo
+import cairosvg
+
+
+class CoordinatePoint:
+    def __init__(self, lat, long, elevation):
+        self.lat = lat
+        self.long = long
+        self.elevation = elevation
+
+    def __str__(self):
+        return f"({self.lat}, {self.long}, {self.elevation})"
+
+
+class Segment:
+    def __init__(self, cordPoints: List[CoordinatePoint]):
+        self.cordPoints: list[CoordinatePoint] = cordPoints
+        self.distance: float = self.__calculate_segment_distance()
+
+    def __calculate_segment_distance(self):
+        distance = 0.0
+        for i in range(len(self.cordPoints) - 1):
+            distance += utils.calculate_distance(
+                self.cordPoints[i], self.cordPoints[i + 1]
+            )
+        return distance
+
+
+class ClimbSegmentPlotSettings:
+    def __init__(self):
+        self._font_size = 12
+        self._text_line_width = 1
+        self._font_color = [0, 0, 0]
+        self._dash_sequence = [5.0]
+        self._line_width = 2
+
+    @property
+    def font_size(self):
+        return self._font_size
+
+    @font_size.setter
+    def font_size(self, value):
+        self._font_size = value
+
+    @property
+    def text_line_width(self):
+        return self._text_line_width
+
+    @text_line_width.setter
+    def text_line_width(self, value):
+        self._text_line_width = value
+
+    @property
+    def font_color(self):
+        return self._font_color
+
+    @font_color.setter
+    def font_color(self, value):
+        self._font_color = value
+
+    @property
+    def dash_sequence(self):
+        return self._dash_sequence
+
+    @dash_sequence.setter
+    def dash_sequence(self, value):
+        self._dash_sequence = value
+
+    @property
+    def line_width(self):
+        return self._line_width
+
+    @line_width.setter
+    def line_width(self, value):
+        self._line_width = value
+
+
+class ClimbSegment(Segment):
+    def __init__(self, cordPoints: List[CoordinatePoint]):
+        super().__init__(cordPoints)
+        self.avgGradient: float = self.__calculate_segment_gradient()
+        self.maxGradient: float = self.__calculate_max_gradient()
+        self.category: int = self.__calculate_category()
+        self.difficulty: float = self.__calculate_difficulty()
+        self.gain: float = self.__calculate_gain()
+
+    def __calculate_segment_gradient(self) -> float:
+        """Calculate the average gradient of the climb segment"""
+        if self.distance == 0:
+            return 0
+
+        return (
+            (self.cordPoints[-1].elevation - self.cordPoints[0].elevation)
+            / self.distance
+            * 100
+        )
+
+    def __calculate_max_gradient(self) -> float:
+        """Calculate the maximum gradient of the climb segment"""
+        maxGradient = 0.0
+        for i in range(len(self.cordPoints) - 1):
+            gradient = utils.calculate_percent_gradient(
+                self.cordPoints[i], self.cordPoints[i + 1]
+            )
+            if (
+                gradient > maxGradient
+                and utils.verify_gradient(gradient)
+                and utils.verify_gradient_delta(
+                    gradient,
+                    utils.calculate_percent_gradient(
+                        self.cordPoints[i - 1], self.cordPoints[i]
+                    ),
+                )
+            ):
+                maxGradient = gradient
+
+        return maxGradient
+
+    def __calculate_category(self):
+        pass
+
+    def __calculate_difficulty(self):
+        pass
+
+    def __calculate_gain(self):
+        return self.cordPoints[-1].elevation - self.cordPoints[0].elevation
+
+    def __grad_color(self, gradient: float) -> List[float]:
+        """Match the gradient to a color for vizualization"""
+        if gradient <= 4:
+            return [88.0, 201.0, 25.0]
+        elif gradient <= 6:
+            return [3.0, 90.0, 144.0]
+        elif gradient <= 9:
+            return [230.0, 16.0, 40.0]
+        else:
+            return [6.0, 6.0, 8.0]
+
+    def __build_sub_segments(self, segment_length: int = 400):
+        """Partition segment into smaller segments of equal length"""
+        sub_segments = []
+        current_sub_segment_length = 0
+        current_sub_segment = []
+
+        # Begin build sub segments
+        for i in range(len(self.cordPoints) - 1):
+            distance = utils.calculate_distance(
+                self.cordPoints[i], self.cordPoints[i + 1]
+            )
+            if current_sub_segment_length + distance < segment_length:
+                current_sub_segment.append(self.cordPoints[i])
+                current_sub_segment_length += distance
+            else:
+                current_sub_segment.append(self.cordPoints[i])
+                current_sub_segment.append(self.cordPoints[i + 1])
+                sub_segments.append(current_sub_segment)
+                current_sub_segment = []
+                current_sub_segment_length = 0
+
+        if current_sub_segment:
+            sub_segments.append(current_sub_segment)
+        # End build sub segments
+
+        return sub_segments
+
+    def plot_segment(
+        self,
+        segment_length: int = 400,
+        climb_index: None | int = None,
+        settings: ClimbSegmentPlotSettings = ClimbSegmentPlotSettings(),
+    ) -> str:
+        """Visualize the climb segment in an SVG file"""
+        # Split the segment into smaller segments of segment_length, calculate the
+        # percentage gradient of each segment and plot it
+        climb_index = climb_index if climb_index is not None else uuid4()
+        with cairo.SVGSurface(f"climb_{climb_index}.svg", 500, 200) as surface:
+            context = cairo.Context(surface)
+            sub_segments = self.__build_sub_segments(segment_length)
+
+            # Paint the background white
+            context.save()
+            context.set_source_rgb(1, 1, 1)
+            context.paint()
+            context.restore()
+
+            # Begin write segment metadata
+            context.set_line_width(settings.text_line_width)
+            context.set_font_size(settings.font_size)
+            context.move_to(2, 10)
+            context.text_path(f"{round(self.gain, 1)}m")
+            context.move_to(2, 25)
+            context.text_path(
+                f"{round(self.distance / 1000, 1)}km at {round(self.avgGradient, 1)}%"
+            )
+            context.stroke()
+            # End write segment metadata
+
+            # Begin plot sub segments
+            context.move_to(0, 200)
+            previous_x = 0
+            previous_y = 200 - 15
+            for index, sub_segment in enumerate(sub_segments):
+                distance = 0
+                total_gradient = 0
+                for i in range(len(sub_segment) - 1):
+                    distance += utils.calculate_distance(
+                        sub_segment[i], sub_segment[i + 1]
+                    )
+                    total_gradient += utils.calculate_percent_gradient(
+                        sub_segment[i], sub_segment[i + 1]
+                    )
+
+                sub_segment_avg_gradient = (
+                    (sub_segment[-1].elevation - sub_segment[0].elevation)
+                    / distance
+                    * 100
+                )
+
+                rescaled_distance = utils.rescale(distance, self.distance, 500)
+                rescaled_rise = utils.find_rise(
+                    rescaled_distance,
+                    sub_segment_avg_gradient,
+                )
+
+                # Draw the colored gradient line
+                context.move_to(previous_x, previous_y)
+                color = self.__grad_color(sub_segment_avg_gradient)
+                context.set_line_width(settings.line_width)
+                context.set_source_rgb(color[0] / 255, color[1] / 255, color[2] / 255)
+                context.line_to(
+                    previous_x + rescaled_distance, previous_y - rescaled_rise
+                )
+
+                context.stroke()
+
+                # Draw the gradient percentage text
+                context.set_source_rgb(*settings.font_color)
+                context.move_to(
+                    previous_x + rescaled_distance - 30, previous_y - rescaled_rise - 10
+                )
+                context.set_line_width(settings.text_line_width)
+                context.set_font_size(settings.font_size)
+                context.text_path(
+                    str(
+                        round(
+                            sub_segment_avg_gradient,
+                            1,
+                        )
+                    )
+                    + "%"
+                )
+                context.stroke()
+
+                # Draw the sub segment distance text
+                if index != len(sub_segments) - 1:
+                    context.move_to(previous_x + rescaled_distance / 2 - 15, 198)
+                    context.text_path(str(segment_length) + "m")
+                    context.stroke()
+
+                # Draw the dashed vertical line
+                context.move_to(previous_x + rescaled_distance, 200)
+                context.set_dash(settings.dash_sequence)
+                context.line_to(
+                    previous_x + rescaled_distance, previous_y - rescaled_rise
+                )
+                context.stroke()
+                context.set_dash([])
+
+                previous_x += rescaled_distance
+                previous_y -= rescaled_rise
+            # End plot sub segments
+
+            context.stroke()
+
+        cairosvg.svg2png(
+            url=f"climb_{climb_index}.svg", write_to=f"climb_{climb_index}.png"
+        )
+
+        os.remove(f"climb_{climb_index}.svg")
+
+        return f"climb_{climb_index}.png"
