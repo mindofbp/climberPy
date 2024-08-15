@@ -5,3 +5,7 @@ __pycache__/
 .venv/*
 
 .DS_Store
+
+# Ignore all pictures
+*.svg
+*.png
