@@ -39,6 +39,8 @@ class ClimbSegmentPlotSettings:
         self._font_color = [0, 0, 0]
         self._dash_sequence = [5.0]
         self._line_width = 2
+        self._plot_width = 440
+        self._plot_height = 400
 
     @property
     def font_size(self):
@@ -179,7 +181,7 @@ class ClimbSegment(Segment):
         # Split the segment into smaller segments of segment_length, calculate the
         # percentage gradient of each segment and plot it
         climb_index = climb_index if climb_index is not None else uuid4()
-        with cairo.SVGSurface(f"climb_{climb_index}.svg", 240, 200) as surface:
+        with cairo.SVGSurface(f"climb_{climb_index}.svg", settings._plot_width, settings._plot_height) as surface:
             context = cairo.Context(surface)
             sub_segments = self.__build_sub_segments(segment_length)
 
@@ -202,18 +204,18 @@ class ClimbSegment(Segment):
             # End write segment metadata
 
             # Begin plot sub segments
-            context.move_to(0, 200)
+            context.move_to(0, settings._plot_height)
             previous_x = 20
-            previous_y = 200 - 25
+            previous_y = settings._plot_height - 25
 
             # Draw the dashed vertical lines to start the plot
-            context.move_to(previous_x, 200 - 10)
+            context.move_to(previous_x, settings._plot_height - 10)
             context.set_dash(settings.dash_sequence)
             context.line_to(previous_x, previous_y)
             context.stroke()
             context.set_dash([])
 
-            context.move_to(previous_x - 7.5 * math.sqrt(3), 200 - 10 - 7.5)
+            context.move_to(previous_x - 7.5 * math.sqrt(3), settings._plot_height - 10 - 7.5)
             context.set_dash(settings.dash_sequence)
             context.line_to(previous_x - 7.5 * math.sqrt(3), previous_y - 7.5)
             context.stroke()
@@ -236,7 +238,7 @@ class ClimbSegment(Segment):
                     * 100
                 )
 
-                rescaled_distance = utils.rescale(distance, self.distance, 200)
+                rescaled_distance = utils.rescale(distance, self.distance, settings._plot_height)
                 rescaled_rise = utils.find_rise(
                     rescaled_distance,
                     sub_segment_avg_gradient,
@@ -319,12 +321,12 @@ class ClimbSegment(Segment):
 
                 # Draw the sub segment distance text
                 if index != len(sub_segments) - 1:
-                    context.move_to(previous_x + rescaled_distance / 2 - 15, 198)
+                    context.move_to(previous_x + rescaled_distance / 2 - 15, settings._plot_height - 2)
                     context.text_path(str(segment_length) + "m")
                     context.stroke()
 
                 # Draw the dashed vertical line
-                context.move_to(previous_x + rescaled_distance, 200 - ((30 / 200) * (previous_x + rescaled_distance) + 10))
+                context.move_to(previous_x + rescaled_distance, settings._plot_height - ((30 / settings._plot_height) * (previous_x + rescaled_distance) + 10))
                 context.set_dash(settings.dash_sequence)
                 context.line_to(
                     previous_x + rescaled_distance, previous_y - rescaled_rise
@@ -337,13 +339,13 @@ class ClimbSegment(Segment):
             # End plot sub segments
 
             # Draw the solid lines on the bottom of the plot
-            context.move_to(20, 200 - 10)
+            context.move_to(20, settings._plot_height - 10)
             context.set_line_width(settings.line_width)
             context.set_source_rgb(*settings.font_color)
-            context.line_to(220, 200 - 40)
+            context.line_to(settings._plot_width - 20, settings._plot_height - 40)
 
-            context.move_to(20, 200 - 10)
-            context.line_to(20 - 7.5 * math.sqrt(3), 200 - 10 - 7.5)
+            context.move_to(20, settings._plot_height - 10)
+            context.line_to(20 - 7.5 * math.sqrt(3), settings._plot_height - 10 - 7.5)
 
             context.stroke()
 
