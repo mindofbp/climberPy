@@ -132,7 +132,7 @@ class ClimbSegment(Segment):
         return self.cordPoints[-1].elevation - self.cordPoints[0].elevation
 
     def __grad_color(self, gradient: float) -> List[float]:
-        """Match the gradient to a color for vizualization"""
+        """Match the gradient to a color for visualization"""
         if gradient <= 4:
             return [88.0, 201.0, 25.0]
         elif gradient <= 6:
@@ -207,13 +207,13 @@ class ClimbSegment(Segment):
             previous_y = 200 - 25
 
             # Draw the dashed vertical lines to start the plot
-            context.move_to(previous_x, 200)
+            context.move_to(previous_x, 200 - 10)
             context.set_dash(settings.dash_sequence)
             context.line_to(previous_x, previous_y)
             context.stroke()
             context.set_dash([])
 
-            context.move_to(previous_x - 7.5 * math.sqrt(3), 200)
+            context.move_to(previous_x - 7.5 * math.sqrt(3), 200 - 10 - 7.5)
             context.set_dash(settings.dash_sequence)
             context.line_to(previous_x - 7.5 * math.sqrt(3), previous_y - 7.5)
             context.stroke()
@@ -302,7 +302,7 @@ class ClimbSegment(Segment):
                 # Draw the gradient percentage text
                 context.set_source_rgb(*settings.font_color)
                 context.move_to(
-                    previous_x + rescaled_distance - 30, previous_y - rescaled_rise - 10
+                    previous_x + rescaled_distance - 35, previous_y - rescaled_rise - 15
                 )
                 context.set_line_width(settings.text_line_width)
                 context.set_font_size(settings.font_size)
@@ -324,7 +324,7 @@ class ClimbSegment(Segment):
                     context.stroke()
 
                 # Draw the dashed vertical line
-                context.move_to(previous_x + rescaled_distance, 200)
+                context.move_to(previous_x + rescaled_distance, 200 - ((30 / 200) * (previous_x + rescaled_distance) + 10))
                 context.set_dash(settings.dash_sequence)
                 context.line_to(
                     previous_x + rescaled_distance, previous_y - rescaled_rise
