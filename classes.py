@@ -1,5 +1,6 @@
+import math
 import os
-from typing import List
+from typing import List, Optional
 from uuid import uuid4
 
 import utils
@@ -171,14 +172,14 @@ class ClimbSegment(Segment):
     def plot_segment(
         self,
         segment_length: int = 400,
-        climb_index: None | int = None,
+        climb_index: Optional[int] = None,
         settings: ClimbSegmentPlotSettings = ClimbSegmentPlotSettings(),
     ) -> str:
-        """Visualize the climb segment in an SVG file"""
+        """Visualize the climb segment in a PNG file"""
         # Split the segment into smaller segments of segment_length, calculate the
         # percentage gradient of each segment and plot it
         climb_index = climb_index if climb_index is not None else uuid4()
-        with cairo.SVGSurface(f"climb_{climb_index}.svg", 500, 200) as surface:
+        with cairo.SVGSurface(f"climb_{climb_index}.svg", 240, 200) as surface:
             context = cairo.Context(surface)
             sub_segments = self.__build_sub_segments(segment_length)
 
@@ -202,8 +203,22 @@ class ClimbSegment(Segment):
 
             # Begin plot sub segments
             context.move_to(0, 200)
-            previous_x = 0
-            previous_y = 200 - 15
+            previous_x = 20
+            previous_y = 200 - 25
+
+            # Draw the dashed vertical lines to start the plot
+            context.move_to(previous_x, 200)
+            context.set_dash(settings.dash_sequence)
+            context.line_to(previous_x, previous_y)
+            context.stroke()
+            context.set_dash([])
+
+            context.move_to(previous_x - 7.5 * math.sqrt(3), 200)
+            context.set_dash(settings.dash_sequence)
+            context.line_to(previous_x - 7.5 * math.sqrt(3), previous_y - 7.5)
+            context.stroke()
+            context.set_dash([])
+
             for index, sub_segment in enumerate(sub_segments):
                 distance = 0
                 total_gradient = 0
@@ -221,13 +236,13 @@ class ClimbSegment(Segment):
                     * 100
                 )
 
-                rescaled_distance = utils.rescale(distance, self.distance, 500)
+                rescaled_distance = utils.rescale(distance, self.distance, 200)
                 rescaled_rise = utils.find_rise(
                     rescaled_distance,
                     sub_segment_avg_gradient,
-                )
+                ) * 10
 
-                # Draw the colored gradient line
+                # Draw the colored gradient road
                 context.move_to(previous_x, previous_y)
                 color = self.__grad_color(sub_segment_avg_gradient)
                 context.set_line_width(settings.line_width)
@@ -235,8 +250,54 @@ class ClimbSegment(Segment):
                 context.line_to(
                     previous_x + rescaled_distance, previous_y - rescaled_rise
                 )
-
+                context.line_to(
+                    previous_x + rescaled_distance - 7.5 * math.sqrt(3),
+                    previous_y - rescaled_rise - 7.5,
+                )
+                context.line_to(
+                    previous_x - 7.5 * math.sqrt(3),
+                    previous_y - 7.5,
+                )
+                context.line_to(
+                    previous_x,
+                    previous_y,
+                )
+                context.fill()
                 context.stroke()
+
+                # Draw the lines around the gradient road
+                context.move_to(previous_x, previous_y)
+                context.set_line_width(settings.line_width)
+                context.set_source_rgb(*settings.font_color)
+                context.line_to(
+                    previous_x + rescaled_distance, previous_y - rescaled_rise
+                )
+                context.line_to(
+                    previous_x + rescaled_distance - 7.5 * math.sqrt(3),
+                    previous_y - rescaled_rise - 7.5,
+                )
+                context.line_to(
+                    previous_x - 7.5 * math.sqrt(3),
+                    previous_y - 7.5,
+                )
+                context.line_to(
+                    previous_x,
+                    previous_y,
+                )
+                context.stroke()
+
+                # Draw the dashed line up the middle of the gradient road
+                context.move_to(
+                    previous_x - 7.5 * math.sqrt(3) / 2,
+                    previous_y - (7.5 / 2),
+                )
+                context.set_dash(settings.dash_sequence)
+                context.line_to(
+                    previous_x + rescaled_distance - (7.5 * math.sqrt(3) / 2),
+                    previous_y - rescaled_rise - (7.5 / 2),
+                )
+                context.stroke()
+                context.set_dash([])
 
                 # Draw the gradient percentage text
                 context.set_source_rgb(*settings.font_color)
@@ -274,6 +335,15 @@ class ClimbSegment(Segment):
                 previous_x += rescaled_distance
                 previous_y -= rescaled_rise
             # End plot sub segments
+
+            # Draw the solid lines on the bottom of the plot
+            context.move_to(20, 200 - 10)
+            context.set_line_width(settings.line_width)
+            context.set_source_rgb(*settings.font_color)
+            context.line_to(220, 200 - 40)
+
+            context.move_to(20, 200 - 10)
+            context.line_to(20 - 7.5 * math.sqrt(3), 200 - 10 - 7.5)
 
             context.stroke()
 
