@@ -321,8 +321,12 @@ class ClimbSegment(Segment):
 
                 # Draw the sub segment distance text
                 if index != len(sub_segments) - 1:
-                    context.move_to(previous_x + rescaled_distance / 2 - 15, settings._plot_height - 2)
-                    context.text_path(str(segment_length) + "m")
+                    context.move_to(previous_x + rescaled_distance - 4, settings._plot_height - ((30 / settings._plot_height) * (previous_x + rescaled_distance) - 4))
+                    accum_distance = ((index + 1) * segment_length) / 1000
+                    if int(accum_distance) != accum_distance:
+                        context.text_path(str(accum_distance))
+                    else:
+                        context.text_path(str(int(accum_distance)))
                     context.stroke()
 
                 # Draw the dashed vertical line
