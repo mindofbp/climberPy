@@ -6,7 +6,11 @@ Find and visualize climbs in a FIT file.
 ```python
 import climberpy
 
-climberPy.parse("exampleActivity.fit")
+points = climberpy.parsers.parse_fit_file(input_file)
+climbs = climberpy.identifiers.ClimbIdentifier(points).identify_climbs()
+
+for climb in climbs:
+    climb.plot_segment()
 ```
 
 The resulting PNG file(s) will be in the directory the method is called from
