@@ -208,6 +208,22 @@ class ClimbSegment(Segment):
             previous_x = 20
             previous_y = settings._plot_height - 25
 
+            # Shade in the area at the base/start of the plot
+            context.set_source_rgb(0.5, 0.5, 0.5)
+            context.move_to(20, settings._plot_height - 10)
+            context.line_to(20, settings._plot_height - 25)
+            context.line_to(
+                20 - 7.5 * math.sqrt(3),
+                settings._plot_height - 25 - 7.5,
+            )
+            context.line_to(
+                20 - 7.5 * math.sqrt(3),
+                settings._plot_height - 10 - 7.5,
+            )
+            context.line_to(20, settings._plot_height - 10)
+            context.fill()
+            context.set_source_rgb(*settings.font_color)
+
             # Draw the dashed vertical lines to start the plot
             context.move_to(previous_x, settings._plot_height - 10)
             context.set_dash(settings.dash_sequence)
@@ -301,23 +317,24 @@ class ClimbSegment(Segment):
                 context.stroke()
                 context.set_dash([])
 
-                # Draw the gradient percentage text
-                context.set_source_rgb(*settings.font_color)
-                context.move_to(
-                    previous_x + rescaled_distance - 35, previous_y - rescaled_rise - 15
-                )
-                context.set_line_width(settings.text_line_width)
-                context.set_font_size(settings.font_size)
-                context.text_path(
-                    str(
-                        round(
-                            sub_segment_avg_gradient,
-                            1,
-                        )
+                # Draw the gradient percentage text if segment is longer than 250m
+                if distance > 100:
+                    context.set_source_rgb(*settings.font_color)
+                    context.move_to(
+                        previous_x + rescaled_distance - 35, previous_y - rescaled_rise - 15
                     )
-                    + "%"
-                )
-                context.stroke()
+                    context.set_line_width(settings.text_line_width)
+                    context.set_font_size(settings.font_size)
+                    context.text_path(
+                        str(
+                            round(
+                                sub_segment_avg_gradient,
+                                1,
+                            )
+                        )
+                        + "%"
+                    )
+                    context.stroke()
 
                 # Draw the sub segment distance text
                 if index != len(sub_segments) - 1:
@@ -329,7 +346,22 @@ class ClimbSegment(Segment):
                         context.text_path(str(int(accum_distance)))
                     context.stroke()
 
+                # Shade in the area under the gradient road
+                context.move_to(previous_x, previous_y)
+                context.set_source_rgb(0.9, 0.9, 0.9)
+                context.line_to(
+                    previous_x + rescaled_distance, previous_y - rescaled_rise
+                )
+                context.line_to(
+                    previous_x + rescaled_distance, settings._plot_height - ((30 / settings._plot_height) * (previous_x + rescaled_distance) + 10)
+                )
+                context.line_to(
+                    previous_x, settings._plot_height - ((30 / settings._plot_height) * (previous_x) + 10)
+                )
+                context.fill()
+
                 # Draw the dashed vertical line
+                context.set_source_rgb(*settings.font_color)
                 context.move_to(previous_x + rescaled_distance, settings._plot_height - ((30 / settings._plot_height) * (previous_x + rescaled_distance) + 10))
                 context.set_dash(settings.dash_sequence)
                 context.line_to(
