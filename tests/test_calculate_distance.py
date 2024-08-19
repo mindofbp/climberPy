@@ -1,5 +1,5 @@
-import utils
-import classes
+import climberpy.utils as utils
+import climberpy.classes as classes
 
 from pytest import approx
 

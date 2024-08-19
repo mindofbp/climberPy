@@ -1,4 +1,4 @@
-import classes
+import classes as classes
 
 import xml.etree.ElementTree as ET
 import fitdecode

@@ -1,7 +1,7 @@
 from classes import *
-import identifiers
+import identifiers as identifiers
 import os
-import parsers
+import parsers as parsers
 import sys
 
 if __name__ == "__main__":
@@ -15,8 +15,14 @@ if __name__ == "__main__":
 
     points = parsers.parse_fit_file(input_file)
     climbs = identifiers.ClimbIdentifier(points).identify_climbs()
+    # TODO: make the plotting done as a call on each climb
+    # Example:
+    # for climb in climbs:
+    #     climb.plot_segment()
     for index, segment in enumerate(climbs):
         if segment.distance >= 1000:
+            # TODO: Move this logic into the plot_segment method
+
             # If distance is less than 2k then we wil plot in 400m segments
             # If the distance is between 2k and 5k then we will plot in 800m segments
             # If the distance is greater than 5k then we will plot in 1k segments

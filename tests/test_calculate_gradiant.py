@@ -1,5 +1,5 @@
-import classes
-import utils
+import climberpy.classes as classes
+import climberpy.utils as utils
 
 
 def test_calculate_gradient_same_point():

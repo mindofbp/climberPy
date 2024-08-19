@@ -1,5 +1,5 @@
 from classes import ClimbSegment, CoordinatePoint
-import utils
+import utils as utils
 
 from typing import List
 
