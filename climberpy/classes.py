@@ -144,6 +144,12 @@ class ClimbSegment(Segment):
         else:
             return [6.0, 6.0, 8.0]
 
+    def __sub_segment_length(self) -> int:
+        if self.distance < 5000:
+            return 500
+
+        return 1000
+
     def __build_sub_segments(self, segment_length: int = 400):
         """Partition segment into smaller segments of equal length"""
         sub_segments = []
@@ -173,17 +179,22 @@ class ClimbSegment(Segment):
 
     def plot_segment(
         self,
-        segment_length: int = 400,
+        minimum_distance: Optional[int] = 1000,
+        sub_segment_length: Optional[int] = None,
         climb_index: Optional[int] = None,
         settings: ClimbSegmentPlotSettings = ClimbSegmentPlotSettings(),
     ) -> str:
         """Visualize the climb segment in a PNG file"""
-        # Split the segment into smaller segments of segment_length, calculate the
+        if self.distance < minimum_distance:
+            return
+
+        # Split the segment into smaller segments of sub_segment_length, calculate the
         # percentage gradient of each segment and plot it
         climb_index = climb_index if climb_index is not None else uuid4()
+        sub_segment_length = sub_segment_length if sub_segment_length else self.__sub_segment_length()
         with cairo.SVGSurface(f"climb_{climb_index}.svg", settings._plot_width, settings._plot_height) as surface:
             context = cairo.Context(surface)
-            sub_segments = self.__build_sub_segments(segment_length)
+            sub_segments = self.__build_sub_segments(sub_segment_length)
 
             # Paint the background white
             context.save()
@@ -339,7 +350,7 @@ class ClimbSegment(Segment):
                 # Draw the sub segment distance text
                 if index != len(sub_segments) - 1:
                     context.move_to(previous_x + rescaled_distance - 4, settings._plot_height - ((30 / settings._plot_height) * (previous_x + rescaled_distance) - 4))
-                    accum_distance = ((index + 1) * segment_length) / 1000
+                    accum_distance = ((index + 1) * sub_segment_length) / 1000
                     if int(accum_distance) != accum_distance:
                         context.text_path(str(accum_distance))
                     else:
