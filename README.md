@@ -55,6 +55,8 @@ These values are customizable by design.
 - Expand the metadata of a segment to include at least GPX information about the start and end of a segment
 - Expand CLI
 - Add features for other sports (running, skiing)
+- Add more segment types
+- Export identified segments in JSON
 
 Any and all feedback, suggestions, critiques, and criticism is welcomed.
 
