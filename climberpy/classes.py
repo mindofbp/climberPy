@@ -177,7 +177,7 @@ class ClimbSegment(Segment):
 
         return sub_segments
 
-    def plot_segment(
+    def plot(
         self,
         minimum_distance: Optional[int] = 1000,
         sub_segment_length: Optional[int] = None,

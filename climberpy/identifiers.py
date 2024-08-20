@@ -95,7 +95,7 @@ class ClimbIdentifier(Identifier):
     ) -> List[CoordinatePoint]:
         return climb[: self._find_climb_peak_index(climb) + 1]
 
-    def identify_climbs(self) -> List[ClimbSegment]:
+    def identify(self) -> List[ClimbSegment]:
         """Identify climb segments in the list of coordinate points"""
         climbs: List[ClimbSegment] = []
         current_climb: List[CoordinatePoint] = []

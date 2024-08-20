@@ -13,8 +13,8 @@ if __name__ == "__main__":
     if os.path.isfile(input_file) == False:
         raise ValueError("File does not exist. Please provide a valid file")
 
-    points = parsers.parse_fit_file(input_file)
-    climbs = identifiers.ClimbIdentifier(points).identify_climbs()
+    points = parsers.parse_fit(input_file)
+    climbs = identifiers.ClimbIdentifier(points).identify()
 
     for climb in climbs:
-        climb.plot_segment()
+        climb.plot()

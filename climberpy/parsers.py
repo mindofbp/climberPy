@@ -24,7 +24,7 @@ def parse_gpx_file(filename: str) -> list:
     return points
 
 
-def parse_fit_file(filename: str):
+def parse_fit(filename: str):
     with fitdecode.FitReader(filename) as fit:
         points = []
         lat = None
