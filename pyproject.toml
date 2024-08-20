@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "climberpy"
+version = "0.0.1"
+authors = [
+    { name = "Bryce Parry", email = "mindofbp@gmail.com" }
+]
+description = "A Python package for identifying and visualizing climbs in FIT files."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+keywords = ["sport", "fit", "gpx", "visualiztion"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "fitdecode",
+    "pycairo",
+    "Click",
+]
+
+[project.scripts]
+climberpy = "climberpy.scripts.script:cli"
+
+[project.gui-scripts]
+climberpy = "climberpy.scripts.script:cli"
