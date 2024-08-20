@@ -6,8 +6,6 @@ import sys
 
 import click
 
-sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
-
 @click.command()
 @click.argument("input_file")
 def cli(input_file):
