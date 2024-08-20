@@ -3,7 +3,7 @@ import os
 from typing import List, Optional
 from uuid import uuid4
 
-import utils as utils
+import climberpy.utils as utils
 import cairo
 import cairosvg
 

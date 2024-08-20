@@ -1,4 +1,4 @@
-import classes as classes
+import climberpy.classes as classes
 
 import xml.etree.ElementTree as ET
 import fitdecode

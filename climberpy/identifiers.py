@@ -1,5 +1,5 @@
-from classes import ClimbSegment, CoordinatePoint
-import utils as utils
+from climberpy.classes import ClimbSegment, CoordinatePoint
+import climberpy.utils as utils
 
 from typing import List
 
