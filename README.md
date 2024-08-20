@@ -1,4 +1,4 @@
-A basic tool to create simple graphics of climbs from [FIT](https://developer.garmin.com/fit/overview/) files.
+A basic tool to create simple graphics of climbs from [FIT](https://developer.garmin.com/fit/overview/) files. Inspired by the graphics you see on [procyclingstats.com](https://www.procyclingstats.com/)
 
 ## Installation
 climberPy is available on PyPI
@@ -18,11 +18,11 @@ Find and visualize climbs in a FIT file.
 ```python
 import climberpy
 
-points = climberpy.parsers.parse_fit_file(input_file)
-climbs = climberpy.identifiers.ClimbIdentifier(points).identify_climbs()
+points = climberpy.parsers.parse_fit(input_file)
+climbs = climberpy.identifiers.ClimbIdentifier(points).identify()
 
 for climb in climbs:
-    climb.plot_segment()
+    climb.plot()
 ```
 
 The resulting PNG file(s) will be in the directory the method is called from
