@@ -1,5 +1,17 @@
 A basic tool to create simple graphics of climbs from [FIT](https://developer.garmin.com/fit/overview/) files.
 
+## Installation
+climberPy is available on PyPI
+```shell
+$ pip install climberpy
+```
+
+It can also be installed from source
+```shell
+$ git clone git@github.com:mindofbp/climberpy.git
+$ cd climberpy
+$ pip install .
+```
 
 ## Usage Example
 Find and visualize climbs in a FIT file.
@@ -19,19 +31,7 @@ The resulting PNG file(s) will be in the directory the method is called from
 ClimberPy can be called from the command line to generate the PNG files
 
 ```shell
-$ python main.py exampleActivity.fit
-```
-
-## Installation
-climberPy is available on PyPI
-```shell
-$ pip install climberpy
-```
-
-It can also be installed from source
-```shell
-$ git clone git@github.com:mindofbp/climberpy.git
-$ cd climberpy
+$ climberpy path/to/activity.fit
 ```
 
 ## License
